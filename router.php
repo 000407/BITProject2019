@@ -18,13 +18,16 @@ class Router
         }
         else
         {
-            $explode_url = explode('/', $url);
-            echo json_encode($explode_url), "<br />";
-            $explode_url = array_slice($explode_url, 2);
-            echo json_encode($explode_url), "<br />";
-            /*$request->controller = $explode_url[0];
-            $request->action = $explode_url[1];
-            $request->params = array_slice($explode_url, 2);*/
+            $urlSegments = explode('/', $url);
+            $urlSegments = array_slice($urlSegments, 2);
+
+            $className = sprintf("%sController", ucfirst($urlSegments[0]));
+            $methodName = $urlSegments[1];
+            $pathParams = array_slice($urlSegments, 2);
+
+            $request->setControllerName($className);
+            $request->setActionName($methodName);
+            $request->setPathParams($pathParams);
         }
     }
 }

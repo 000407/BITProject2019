@@ -9,26 +9,53 @@
 class Request
 {
     private $url;
+    private $controllerName;
+    private $actionName;
+    private $pathParams;
 
     public function __construct()
     {
         $this->url = $_SERVER["REQUEST_URI"];
     }
 
-    /**
-     * @return mixed
-     */
     public function getUrl()
     {
         return $this->url;
     }
 
-    /**
-     * @param mixed $url
-     */
     public function setUrl($url)
     {
         $this->url = $url;
+    }
+
+    public function getControllerName()
+    {
+        return $this->controllerName;
+    }
+
+    public function setControllerName($controllerName)
+    {
+        $this->controllerName = $controllerName;
+    }
+
+    public function getActionName()
+    {
+        return $this->actionName;
+    }
+
+    public function setActionName($actionName)
+    {
+        $this->actionName = $actionName;
+    }
+
+    public function getPathParams()
+    {
+        return $this->pathParams;
+    }
+
+    public function setPathParams($pathParams)
+    {
+        $this->pathParams = $pathParams;
     }
 
 

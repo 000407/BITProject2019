@@ -16,3 +16,14 @@ require(ROOT . "Request.php");
 
 $request = new Request();
 Router::parse($request->getUrl(), $request);
+
+spl_autoload_register(function($className){
+    require_once("../controller/$className.php");
+});
+
+$controllerName = $request->getControllerName();
+$methodName = $request->getActionName();
+$params = $request->getPathParams();
+
+$controller = new $controllerName();
+call_user_func_array(array($controller, $methodName), $params);
