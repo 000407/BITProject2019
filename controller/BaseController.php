@@ -8,7 +8,11 @@
 
 class BaseController
 {
-    public function loadView($controller, $action){
+    public function loadView(){
+        $backtrace = debug_backtrace();
+        $lastCaller = end($backtrace);
+        $controller = strtolower(str_replace("Controller", "", $lastCaller["class"]));
+        $action = $lastCaller["function"];
         require_once (ROOT . "view/$controller/$action.php");
     }
 }
