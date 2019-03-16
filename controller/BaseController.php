@@ -13,6 +13,8 @@ class BaseController
         $lastCaller = end($backtrace);
         $controller = strtolower(str_replace("Controller", "", $lastCaller["class"]));
         $action = $lastCaller["function"];
+        require_once(ROOT . "view/template/header.php");
         require_once (ROOT . "view/$controller/$action.php");
+        require_once(ROOT . "view/template/footer.php");
     }
 }
