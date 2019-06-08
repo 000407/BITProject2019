@@ -13,9 +13,14 @@ class Request
     private $actionName;
     private $pathParams;
 
-    public function __construct()
+    public function __construct($url = null)
     {
-        $this->url = $_SERVER["REQUEST_URI"];
+        if(isset($url)){
+            $this->url = $url;
+        }
+        else {
+            $this->url = $_SERVER["REQUEST_URI"];
+        }
     }
 
     public function getUrl()

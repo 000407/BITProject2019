@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
+
+    <script src="<?= RESOURCES ?>vendor/jquery.min.js"></script>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="<?= RESOURCES ?>images/favicon.png">
     <title>Monster Admin Template - The Most Complete & Trusted Bootstrap 4 Admin Template</title>
@@ -122,9 +124,6 @@
                         <a href="pages-error-404.html" class="waves-effect"><i class="fa fa-info-circle m-r-10" aria-hidden="true"></i>Error 404</a>
                     </li>
                 </ul>
-                <div class="text-center m-t-30">
-                    <a href="https://wrappixel.com/templates/monsteradmin/" class="btn btn-danger"> Upgrade to Pro</a>
-                </div>
             </nav>
             <!-- End Sidebar navigation -->
         </div>
@@ -151,9 +150,6 @@
                         <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
                         <li class="breadcrumb-item active">Dashboard</li>
                     </ol>
-                </div>
-                <div class="col-md-6 col-4 align-self-center">
-                    <a href="https://wrappixel.com/templates/monsteradmin/" class="btn pull-right hidden-sm-down btn-success"> Upgrade to Pro</a>
                 </div>
             </div>
             <!-- ============================================================== -->
