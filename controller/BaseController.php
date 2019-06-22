@@ -8,7 +8,7 @@
 
 class BaseController
 {
-    public function loadView($vars = null){
+    public function loadView(){
         $backtrace = debug_backtrace();
         $lastCaller = end($backtrace);
         $controller = strtolower(str_replace("Controller", "", $lastCaller["class"]));

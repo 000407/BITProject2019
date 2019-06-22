@@ -29,7 +29,17 @@ $request = new Request();
 Router::parse($request->getUrl(), $request);
 
 spl_autoload_register(function($className){
-    require_once("../controller/$className.php");
+    $fileName = "../controller/$className.php";
+    if(file_exists($fileName)){
+        require_once($fileName);
+    }
+});
+
+spl_autoload_register(function($className){
+    $fileName = "../model/$className.php";
+    if(file_exists($fileName)){
+        require_once($fileName);
+    }
 });
 
 $controllerName = $request->getControllerName();

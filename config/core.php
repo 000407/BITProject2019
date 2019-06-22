@@ -11,5 +11,6 @@ $config = array();
 $config["anonymousAllowed"] = array(
     "/user/login(/[a-zA-Z\d\%]+)?",
     "/user/authenticate",
-    "/user/register"
+    "/user/register",
+    "/user/doRegistration[.]*"
 );

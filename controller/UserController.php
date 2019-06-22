@@ -60,4 +60,37 @@ class UserController extends BaseController
         }
         echo json_encode($loggedUser);
     }
+
+    public function register(){
+        if(isset($_SESSION["user"]["name"])) {
+            $url = APPROOT . "/home/index";
+            header("location:$url");
+        }
+
+        $this->loadView();
+    }
+
+    public function doRegistration(){
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+            header("HTTP/1.1 405 NOT ALLOWED");
+        }
+
+        $userData = $_POST["userData"];
+
+        $user = new User();
+        $user->setUsername($userData["username"]);
+        $user->setPassword($userData["password"]);
+        $user->setFirstName($userData["firstName"]);
+        $user->setLastName($userData["lastName"]);
+        $user->setEmail($userData["email"]);
+
+        $res = $user->save();
+        if($res){
+            $result = array("success"=>true, "message"=>"Welcome " . $user->getFirstName() . "!");
+            echo json_encode($result);
+        }
+        else{
+            header("HTTP/1.1 500 Internal Server Error");
+        }
+    }
 }
