@@ -544,6 +544,10 @@ ol li {
     background: #7460ee
 }
 
+.row-loose {
+    margin: 5px 0;
+}
+
 .label {
     padding: 2px 10px;
     line-height: 13px;
@@ -638,6 +642,10 @@ ol li {
 .label-light-inverse {
     background-color: #f6f6f6;
     color: #2f3d4a
+}
+
+.lbl-right {
+    text-align: right;
 }
 
 .pagination > li:first-child > a, .pagination > li:first-child > span {
@@ -7372,8 +7380,16 @@ a.mytooltip {
         margin-left: 240px
     }
 
+    .page-wrapper-plain {
+        margin-left: 0;
+    }
+
     .footer {
         left: 240px
+    }
+
+    .footer-plain {
+        left: 0;
     }
 }
 

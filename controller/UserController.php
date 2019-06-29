@@ -14,8 +14,8 @@ class UserController extends BaseController
             $url = APPROOT . "/home/index";
             header("location:$url");
         }
-        $data = array("postBack"=>$postBack);
-        $this->loadView($data);
+        $data = array("postBack"=>$postBack, "pageTitle"=>"Login");
+        $this->loadView($data, true);
     }
 
     public function authenticate()
@@ -67,7 +67,7 @@ class UserController extends BaseController
             header("location:$url");
         }
 
-        $this->loadView();
+        $this->loadView(null,true);
     }
 
     public function doRegistration(){
