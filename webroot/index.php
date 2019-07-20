@@ -28,19 +28,7 @@ if (!isAuthenticated($anonymousAllowed)) {
 $request = new Request();
 Router::parse($request->getUrl(), $request);
 
-spl_autoload_register(function($className){
-    $fileName = "../controller/$className.php";
-    if(file_exists($fileName)){
-        require_once($fileName);
-    }
-});
-
-spl_autoload_register(function($className){
-    $fileName = "../model/$className.php";
-    if(file_exists($fileName)){
-        require_once($fileName);
-    }
-});
+require_once("./autoloaders.php");
 
 $controllerName = $request->getControllerName();
 $methodName = $request->getActionName();
@@ -50,11 +38,12 @@ $controller = new $controllerName();
 
 call_user_func_array(array($controller, $methodName), $params);
 
-function isAuthenticated($anonymousAllowed){
+function isAuthenticated($anonymousAllowed)
+{
     $url = str_replace(APPROOT, "", $_SERVER["REQUEST_URI"]);
-    foreach ($anonymousAllowed as $re){
+    foreach ($anonymousAllowed as $re) {
         $regEx = sprintf("/^%s/", str_replace("/", "\/", $re));
-        if(preg_match($regEx, $url)){
+        if (preg_match($regEx, $url)) {
             return true;
         }
     }

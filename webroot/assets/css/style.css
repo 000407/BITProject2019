@@ -7640,3 +7640,8 @@ a.mytooltip {
         width: 245px
     }
 }
+
+/*CUSTOM CSS*/
+input.error{
+    border: 1px solid red;
+}

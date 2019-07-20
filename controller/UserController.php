@@ -77,20 +77,46 @@ class UserController extends BaseController
 
         $userData = $_POST["userData"];
 
+        $passHash = password_hash($userData["password"], PASSWORD_BCRYPT);
+
         $user = new User();
         $user->setUsername($userData["username"]);
-        $user->setPassword($userData["password"]);
+        $user->setPassword($passHash);
         $user->setFirstName($userData["firstName"]);
         $user->setLastName($userData["lastName"]);
         $user->setEmail($userData["email"]);
 
         $res = $user->save();
         if($res){
+            try {
+                $mailer = new BITMailer();
+                $mailer->addTo($user->getEmail())
+                    ->addSubject("Welcome to BITProject2019")
+                    ->addBody("Your registration with the BITProject2019 has been successfully completed!")
+                    ->send();
+            } catch (Exception $e) {
+                //TODO: Log the mailer error!
+            }
             $result = array("success"=>true, "message"=>"Welcome " . $user->getFirstName() . "!");
             echo json_encode($result);
         }
         else{
             header("HTTP/1.1 500 Internal Server Error");
+        }
+    }
+
+    public function exists(){
+        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+            header("HTTP/1.1 405 NOT ALLOWED");
+        }
+
+        $username = $_POST["username"];
+
+        if($username === "admin"){
+            echo "false";
+        }
+        else {
+            echo "true";
         }
     }
 }
