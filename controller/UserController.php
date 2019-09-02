@@ -85,6 +85,7 @@ class UserController extends BaseController
         $user->setFirstName($userData["firstName"]);
         $user->setLastName($userData["lastName"]);
         $user->setEmail($userData["email"]);
+        //TODO: Get the phone and set to user object
 
         $res = $user->save();
         if($res){
@@ -97,6 +98,11 @@ class UserController extends BaseController
             } catch (Exception $e) {
                 //TODO: Log the mailer error!
             }
+
+            //Sending phone verification SMS
+            $otp = OTPUtility::generate();
+            MessageUtility::sendMessage($user->getPhone(), "Your OTP for phone number verification is $otp");
+
             $result = array("success"=>true, "message"=>"Welcome " . $user->getFirstName() . "!");
             echo json_encode($result);
         }
