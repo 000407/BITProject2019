@@ -80,34 +80,40 @@ class UserController extends BaseController
         $passHash = password_hash($userData["password"], PASSWORD_BCRYPT);
 
         $user = new User();
-        $user->setUsername($userData["username"]);
-        $user->setPassword($passHash);
-        $user->setFirstName($userData["firstName"]);
-        $user->setLastName($userData["lastName"]);
-        $user->setEmail($userData["email"]);
-        //TODO: Get the phone and set to user object
+        $user->username = $userData["username"];
+        $user->password = $passHash;
 
-        $res = $user->save();
-        if($res){
+        $userProfile = new UserProfile();
+        $userProfile->firstName = $userData["firstName"];
+        $userProfile->lastName = $userData["lastName"];
+        $userProfile->email = $userData["email"];
+        $userProfile->phone = $userData["phone"];
+
+        $saveUserResult = $user->save();
+        $saveProfileResult = $userProfile->save();
+
+        if($saveUserResult && $saveProfileResult){
             try {
                 $mailer = new BITMailer();
-                $mailer->addTo($user->getEmail())
+                $mailer->addTo($userProfile->email)
                     ->addSubject("Welcome to BITProject2019")
                     ->addBody("Your registration with the BITProject2019 has been successfully completed!")
                     ->send();
+                //TODO: Verify email address using a link sent via the above email.
             } catch (Exception $e) {
-                //TODO: Log the mailer error!
+                //TODO: Log error (Mailer error)
             }
 
             //Sending phone verification SMS
-            $otp = OTPUtility::generate();
-            MessageUtility::sendMessage($user->getPhone(), "Your OTP for phone number verification is $otp");
+            $otp = OTPUtility::generate($userProfile->phone);
+            MessageUtility::sendMessage($otp->mobileNumber, "Your OTP for phone number verification is $otp");
 
-            $result = array("success"=>true, "message"=>"Welcome " . $user->getFirstName() . "!");
+            $result = array("success"=>true, "message"=>"Welcome " . $userProfile->firstName . "!");
             echo json_encode($result);
         }
         else{
             header("HTTP/1.1 500 Internal Server Error");
+            //TODO: Log error
         }
     }
 

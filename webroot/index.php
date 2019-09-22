@@ -14,12 +14,10 @@ define('APPROOT', "/BITProject2019");
 
 require(ROOT . "config/core.php");
 
-extract($config); //Decomposing $Config to variables
-
 require(ROOT . "Router.php");
 require(ROOT . "Request.php");
 
-if (!isAuthenticated($anonymousAllowed)) {
+if (!isAuthenticated(ANONYMOUS_ALLOWED)) {
     $postBack = $_SERVER["REQUEST_URI"];
     $postBack = urlencode(urlencode(urlencode($postBack)));
     header("location:/BITProject2019/user/login/$postBack");

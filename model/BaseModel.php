@@ -8,7 +8,6 @@
 
 abstract class BaseModel {
     protected $con;
-    protected $id;
 
     /**
      * BaseModel constructor.
@@ -24,8 +23,14 @@ abstract class BaseModel {
             $entity = $this;
         }
 
-        $fields = $this->getFields();
-        $values = $this->getFieldValues($entity);
+        $properties = $this->getFieldValueMap($this);
+
+        $nonEmptyProperties = array_filter($properties, function($v, $k){
+            return $v != null;
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $fields = array_keys($nonEmptyProperties);
+        $values = array_map(array($this, 'flatten'), array_values($nonEmptyProperties));
 
         $fieldList = implode(", ", $fields);
         $valueList = implode(", ", $values);
@@ -33,6 +38,8 @@ abstract class BaseModel {
         $tableName = get_class($entity);
 
         $query = "INSERT INTO $tableName($fieldList) VALUES($valueList)";
+
+        echo $query;
         $res = $this->con->query($query);
 
         if(!$res){
@@ -43,14 +50,14 @@ abstract class BaseModel {
         return $res;
     }
 
-    public function update($updatedEntity = null) {
+    public function update($updatedEntity = null, $idField = 'id') {
         $tableName = get_class($this);
 
         if(!isset($updatedEntity)){
             $updatedEntity = $this;
         }
 
-        $fieldValueMap = $this->getFieldValueMap($updatedEntity);
+        $fieldValueMap = array_map(array($this, 'flatten'), $this->getFieldValueMap($updatedEntity));
 
         $generateSqlKeyValuePairs = function($k,$v){ //Function to generate key value pairs
             return "$k=$v";
@@ -58,7 +65,7 @@ abstract class BaseModel {
 
         $valueString = implode(',', $this->array_map_assoc($generateSqlKeyValuePairs, $fieldValueMap));
 
-        $query = "UPDATE $tableName SET $valueString WHERE id=$this->id";
+        $query = "UPDATE $tableName SET $valueString WHERE $idField='" . $this->$idField . "'";
 
         $res = $this->con->query($query);
 
@@ -70,73 +77,48 @@ abstract class BaseModel {
         return $res;
     }
 
-    public function find($id) {
-        $tableName = get_class($this);
-        $query = "SELECT * FROM $tableName WHERE id='$id'";
-
-        $res = $this->con->query($query);
-
-        if($res->num_rows < 0) {
-            return null;
-        }
-
-        $record = $res->fetch_assoc();
-
-        $fields = $this->getFields();
-
-        foreach ($fields as $field) {
-            $this->$field = $record[$field];
-        }
-
-        return $this;
-    }
-
     public function toArray(){
         return call_user_func('get_object_vars', $this);
     }
 
-    private function getFields() {
+    public function getInsertFields() {
         $reflect = new ReflectionClass($this);
         $properties   = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE);
         $fields = array();
 
-        foreach ($properties as $f){
-            if($f->getName() === "con"){
+        foreach ($properties as $p){
+            if($p->getName() === "con") {
                 continue;
             }
-            $fields[] = $f->getName();
+
+            $p->setAccessible(true);
+            $val = $p->getValue($this);
+
+            if($val == null) {
+                continue;
+            }
+
+            $p->setAccessible(false);
+
+            $fields[] = $p->getName();
         }
 
         return $fields;
     }
 
-    private function getFieldValues($entity) {
-        $reflect = new ReflectionClass($entity);
-        $properties   = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE);
-        $values = array();
+    public function getRelationFields($res) {
+        $relationalFields = array();
 
-        foreach ($properties as $p){
-            if($p->getName() === "con"){
-                continue;
-            }
-
-            $p->setAccessible(true);
-
-            $val = $p->getValue($entity);
-            if(gettype($val) !== "integer"){
-                $val = "'$val'";
-            }
-            $values[] = $val;
-
-            $p->setAccessible(false);
+        while($field = $res->fetch_field()) {
+            $relationalFields[$field->name] = $field->type;
         }
 
-        return $values;
+        return $relationalFields;
     }
 
-    private function getFieldValueMap($entity) {
+    public function getFieldValueMap($entity) {
         $reflect = new ReflectionClass($entity);
-        $properties   = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE);
+        $properties = $reflect->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PRIVATE);
         $values = array();
 
         foreach ($properties as $p){
@@ -148,9 +130,6 @@ abstract class BaseModel {
 
             $name = $p->getName();
             $value = $p->getValue($entity);
-            if(gettype($value) !== "integer"){
-                $value = "'$value'";
-            }
             $values[$name] = $value;
 
             $p->setAccessible(false);
@@ -159,10 +138,67 @@ abstract class BaseModel {
         return $values;
     }
 
+    protected function select($query){
+        $res = $this->con->query($query);
+
+        if($res->num_rows < 0) {
+            return null;
+        }
+
+        $record = $res->fetch_assoc();
+
+        $fields = $this->getRelationFields($res);;
+
+        foreach ($fields as $name => $type) {
+            switch($type) {
+                case MYSQL_TYPES['DATETIME']:
+                    try {
+                        $this->$name = new DateTime($record[$name]);
+                    } catch (Exception $e) {
+                        //TODO: Log error
+                    }
+                    break;
+                    //TODO: Add other types as necessary
+                default:
+                    $this->$name = $record[$name];
+                    break;
+            }
+        }
+
+        return $this;
+    }
+
+    protected function exists($query) {
+        $res = $this->con->query($query);
+        return $res->num_rows > 0;
+    }
+
     private function array_map_assoc( $callback , $array ){
         $r = array();
         foreach ($array as $key=>$value)
             $r[$key] = $callback($key,$value);
         return $r;
+    }
+
+    private function flatten($value)
+    {
+        switch (gettype($value)){
+            case 'object':
+                switch(get_class($value)) {
+                    case 'DateTime':
+                        return "'" . $value->format(MYSQL_DATETIME_FORMAT) . "'";
+                    default:
+                        //TODO: Serialize?
+                }
+                break;
+            case 'string':
+            case 'boolean':
+                return "'$value'";
+                break;
+            case 'integer':
+                return $value;
+            default:
+                //TODO: Find out what to do? :D
+        }
     }
 }

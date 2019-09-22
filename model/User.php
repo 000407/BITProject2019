@@ -1,9 +1,8 @@
 <?php
 
 
-class User extends BaseModel
+class User extends IdentifiedBaseModel
 {
-    public $id;
     public $username;
     public $password;
 }
